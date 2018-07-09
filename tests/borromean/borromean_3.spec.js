@@ -25,42 +25,17 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-"use strict";
-//
-const JSBigInt = require("../cryptonote_utils/biginteger").BigInteger;
-//
-module.exports = {
-	// Number of atomic units in one unit of currency. e.g. 12 => 10^12 = 1000000000000
-	coinUnitPlaces: 12,
 
-	// Minimum number of confirmations for a transaction to show as confirmed
-	txMinConfirms: 10,
+const monero_utils = require("../../").monero_utils;
+const { generate_parameters } = require("./test_parameters");
+const { indi, P1v, P2v, xv, N } = generate_parameters();
 
-	// Currency symbol
-	coinSymbol: "XMR",
+it("borromean_3", () => {
+	//#true one again
+	indi[3] = `${(+indi[3] + 1) % 2}`;
+	indi[3] = `${(+indi[3] + 1) % 2}`;
 
-	// OpenAlias prefix
-	openAliasPrefix: "xmr",
-
-	// Currency name
-	coinName: "Monero",
-
-	// Payment URI Prefix
-	coinUriPrefix: "monero:",
-
-	// Prefix code for addresses
-	addressPrefix: 18, // 18 => addresses start with "4"
-	integratedAddressPrefix: 19,
-	subaddressPrefix: 42,
-
-	// Dust threshold in atomic units
-	// 2*10^9 used for choosing outputs/change - we decompose all the way down if the receiver wants now regardless of threshold
-	dustThreshold: new JSBigInt("2000000000"),
-
-	// Maximum block number, used for tx unlock time
-	maxBlockNumber: 500000000,
-
-	// Average block time in seconds, used for unlock time estimation
-	avgBlockTime: 60,
-};
+	const bb = monero_utils.genBorromean(xv, [P1v, P2v], indi, 2, N); /*?.*/
+	const valid = monero_utils.verifyBorromean(bb, P1v, P2v); /*?.*/
+	expect(valid).toBe(true);
+});

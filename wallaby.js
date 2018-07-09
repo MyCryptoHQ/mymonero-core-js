@@ -25,22 +25,31 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-"use strict";
-//
-// NOTE: The main downside to using an index.js file like this is that it will pull in all the code - rather than the consumer requiring code module-by-module
-// It's of course possible to construct your own stripped-down index.[custom name].js file for, e.g., special webpack bundling usages.
-const mymonero_core_js = {};
-mymonero_core_js.monero_utils = require("./monero_utils/monero_cryptonote_utils_instance");
-mymonero_core_js.monero_config = require("./monero_utils/monero_config");
-mymonero_core_js.monero_txParsing_utils = require("./monero_utils/monero_txParsing_utils");
-mymonero_core_js.monero_sendingFunds_utils = require("./monero_utils/monero_sendingFunds_utils");
-mymonero_core_js.monero_requestURI_utils = require("./monero_utils/monero_requestURI_utils");
-mymonero_core_js.monero_keyImage_cache_utils = require("./monero_utils/monero_keyImage_cache_utils");
-mymonero_core_js.monero_paymentID_utils = require("./monero_utils/monero_paymentID_utils");
-mymonero_core_js.api_response_parser_utils = require("./hostAPI/response_parser_utils");
-//
-mymonero_core_js.nettype_utils = require("./cryptonote_utils/nettype");
-mymonero_core_js.JSBigInt = require("./cryptonote_utils/biginteger").BigInteger; // so that it is available to a hypothetical consumer's language-bridging web context for constructing string arguments to the above modules
-//
-module.exports = mymonero_core_js;
+
+module.exports = function(wallaby) {
+	process.env.NODE_ENV = "development";
+
+	return {
+		name: "mymonero-core-js",
+		files: [
+			"cryptonote_utils/**/*.js",
+			"hostAPI/**/*.js",
+			"monero_utils/**/*.js",
+			"index.js",
+			"tests/borromean/test_parameters.js",
+		],
+
+		filesWithNoCoverageCalculated: [
+			"cryptonote_utils/nacl-fast-cn.js",
+			"cryptonote_utils/biginteger.js",
+			"cryptonote_utils/sha3.js",
+			"cryptonote_utils/cryptonote_crypto_EMSCRIPTEN.js",
+		],
+
+		tests: ["./tests/**/*spec.js"],
+
+		testFramework: "jest",
+
+		env: { type: "node", runner: "node" },
+	};
+};

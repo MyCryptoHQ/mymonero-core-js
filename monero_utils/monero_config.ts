@@ -1,3 +1,5 @@
+import { JSBigInt } from "types";
+
 // Copyright (c) 2014-2018, MyMonero.com
 //
 // All rights reserved.
@@ -25,22 +27,53 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-"use strict";
-//
-// NOTE: The main downside to using an index.js file like this is that it will pull in all the code - rather than the consumer requiring code module-by-module
-// It's of course possible to construct your own stripped-down index.[custom name].js file for, e.g., special webpack bundling usages.
-const mymonero_core_js = {};
-mymonero_core_js.monero_utils = require("./monero_utils/monero_cryptonote_utils_instance");
-mymonero_core_js.monero_config = require("./monero_utils/monero_config");
-mymonero_core_js.monero_txParsing_utils = require("./monero_utils/monero_txParsing_utils");
-mymonero_core_js.monero_sendingFunds_utils = require("./monero_utils/monero_sendingFunds_utils");
-mymonero_core_js.monero_requestURI_utils = require("./monero_utils/monero_requestURI_utils");
-mymonero_core_js.monero_keyImage_cache_utils = require("./monero_utils/monero_keyImage_cache_utils");
-mymonero_core_js.monero_paymentID_utils = require("./monero_utils/monero_paymentID_utils");
-mymonero_core_js.api_response_parser_utils = require("./hostAPI/response_parser_utils");
-//
-mymonero_core_js.nettype_utils = require("./cryptonote_utils/nettype");
-mymonero_core_js.JSBigInt = require("./cryptonote_utils/biginteger").BigInteger; // so that it is available to a hypothetical consumer's language-bridging web context for constructing string arguments to the above modules
-//
-module.exports = mymonero_core_js;
+
+export interface XMRConfig {
+	readonly coinUnitPlaces: 12;
+	readonly txMinConfirms: 10;
+	readonly coinSymbol: "XMR";
+	readonly openAliasPrefix: "xmr";
+	readonly coinName: "Monero";
+	readonly coinUriPrefix: "monero:";
+	readonly addressPrefix: 18;
+	readonly integratedAddressPrefix: 19;
+	readonly subaddressPrefix: 42;
+	readonly dustThreshold: JSBigInt;
+	readonly maxBlockNumber: 500000000;
+	readonly avgBlockTime: 60;
+}
+
+export const config: XMRConfig = {
+	// Number of atomic units in one unit of currency. e.g. 12 => 10^12 = 1000000000000
+	coinUnitPlaces: 12,
+
+	// Minimum number of confirmations for a transaction to show as confirmed
+	txMinConfirms: 10,
+
+	// Currency symbol
+	coinSymbol: "XMR",
+
+	// OpenAlias prefix
+	openAliasPrefix: "xmr",
+
+	// Currency name
+	coinName: "Monero",
+
+	// Payment URI Prefix
+	coinUriPrefix: "monero:",
+
+	// Prefix code for addresses
+	addressPrefix: 18, // 18 => addresses start with "4"
+	integratedAddressPrefix: 19,
+	subaddressPrefix: 42,
+
+	// Dust threshold in atomic units
+	// 2*10^9 used for choosing outputs/change - we decompose all the way down if the receiver wants now regardless of threshold
+	dustThreshold: new JSBigInt("2000000000"),
+
+	// Maximum block number, used for tx unlock time
+	maxBlockNumber: 500000000,
+
+	// Average block time in seconds, used for unlock time estimation
+	avgBlockTime: 60,
+};

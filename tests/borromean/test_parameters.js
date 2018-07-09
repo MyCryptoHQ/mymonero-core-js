@@ -25,22 +25,59 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-"use strict";
-//
-// NOTE: The main downside to using an index.js file like this is that it will pull in all the code - rather than the consumer requiring code module-by-module
-// It's of course possible to construct your own stripped-down index.[custom name].js file for, e.g., special webpack bundling usages.
-const mymonero_core_js = {};
-mymonero_core_js.monero_utils = require("./monero_utils/monero_cryptonote_utils_instance");
-mymonero_core_js.monero_config = require("./monero_utils/monero_config");
-mymonero_core_js.monero_txParsing_utils = require("./monero_utils/monero_txParsing_utils");
-mymonero_core_js.monero_sendingFunds_utils = require("./monero_utils/monero_sendingFunds_utils");
-mymonero_core_js.monero_requestURI_utils = require("./monero_utils/monero_requestURI_utils");
-mymonero_core_js.monero_keyImage_cache_utils = require("./monero_utils/monero_keyImage_cache_utils");
-mymonero_core_js.monero_paymentID_utils = require("./monero_utils/monero_paymentID_utils");
-mymonero_core_js.api_response_parser_utils = require("./hostAPI/response_parser_utils");
-//
-mymonero_core_js.nettype_utils = require("./cryptonote_utils/nettype");
-mymonero_core_js.JSBigInt = require("./cryptonote_utils/biginteger").BigInteger; // so that it is available to a hypothetical consumer's language-bridging web context for constructing string arguments to the above modules
-//
-module.exports = mymonero_core_js;
+
+const monero_utils = require("../../").monero_utils;
+const { randomBytes } = require("crypto");
+
+function randomBit() {
+	// get random 8 bits in hex
+	const rand8bits = randomBytes(1).toString("hex");
+	// take 4 bits "nibble" and convert to binary
+	// then take last index
+	return monero_utils.padLeft(
+		parseInt(rand8bits[0], 16).toString(2),
+		4,
+		0,
+	)[3];
+}
+
+//Tests for Borromean signatures
+//#boro true one, false one, C != sum Ci, and one out of the range..
+const N = 64;
+let xv = [], // vector of secret keys, 1 per ring (nrings)
+	P1v = [], //key64, arr of commitments Ci
+	P2v = [], //key64
+	indi = []; // vector of secret indexes, 1 per ring (nrings), can be a string
+
+let indi_2 = [];
+let indi_3 = [];
+let indi_4 = [];
+
+let generated = false;
+
+function generate_parameters() {
+	if (generated) {
+		const indiCopy = [...indi];
+
+		return { xv, P1v, P2v, indi: indiCopy, N };
+	} else {
+		for (let j = 0; j < N; j++) {
+			indi[j] = randomBit(); /*?.*/
+
+			xv[j] = monero_utils.skGen(); /*?.*/
+
+			if (+indi[j] === 0) {
+				P1v[j] = monero_utils.ge_scalarmult_base(xv[j]); /*?.*/
+			} else {
+				P1v[j] = monero_utils.ge_scalarmult_base(xv[j]); // calculate aG = xv[j].G /*?.*/
+				P1v[j] = monero_utils.ge_add(P1v[j], monero_utils.H2[j]); // calculate aG + H2 /*?.*/
+			}
+
+			P2v[j] = monero_utils.ge_sub(P1v[j], monero_utils.H2[j]); /*?.*/
+		}
+		generated = true;
+		return { xv, P1v, P2v, indi, N };
+	}
+}
+
+module.exports = { generate_parameters };
