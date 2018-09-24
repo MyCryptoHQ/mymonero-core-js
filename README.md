@@ -3,7 +3,7 @@
 Forked from mymonero/mymonero-core-js, this library provides a few significant changes compared to its origin:
 
 -   Full typescript support
--   Hardware wallet (Ledeger Nano S) support
+-   Hardware wallet (Ledger Nano S) support
 -   Re-written to es6+ standards
 -   Isomorphic, ideal for both server and browser usage
 
